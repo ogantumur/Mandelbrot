@@ -3,7 +3,7 @@
 ComplexPlane::ComplexPlane(int pixelWidth, int pixelHeight)
 {
     m_pixel_size = { pixelWidth, pixelHeight };
-    m_aspectRatio = pixelHeight / pixelWidth;
+    m_aspectRatio = 1.0*pixelHeight / pixelWidth;
     m_plane_center = { 0,0 };
     m_plane_size = { BASE_WIDTH, BASE_HEIGHT * m_aspectRatio };
     m_zoomCount = 0;
@@ -37,8 +37,7 @@ void ComplexPlane::zoomOut()
 
 void ComplexPlane::setCenter(Vector2i mousePixel)
 {
-    Vector2f complexCoord = mapPixelToCoords(mousePixel);
-    m_plane_center = complexCoord;
+    m_plane_center = mapPixelToCoords(mousePixel);
     m_state = State::CALCULATING;
 }
 
@@ -104,25 +103,46 @@ void ComplexPlane::iterationsToRGB(size_t count, Uint8& r, Uint8& g, Uint8& b)
 {
     if (count == MAX_ITER)
     {
+        r = 150;
+        g = 0;
+        b = 255;
+    }
+    else if (count >= 52 && count < MAX_ITER)
+    {
+        r = 100;
+        g = 0;
+        b = 255;
+    }
+    else if (count >= 38 && count < 52)
+    {
+        r = 0;
+        g = 0;
+        b = 255;
+    }
+    else if (count >= 26 && count < 38)
+    {
+        r = 0;
+        g = 100;
+        b = 255;
+    }
+    else if (count >= 12 && count < 26)
+    {
+        r = 0;
+        g = 180;
+        b = 255;
+    }
+    else if (count >= 0 && count < 12)
+    {
         r = 0;
         g = 0;
         b = 0;
-    }
-    else
-    {
-        
     }
 }
 
 Vector2f ComplexPlane::mapPixelToCoords(Vector2i mousePixel)
 {
-    Vector2f returnVector;
-    returnVector.x = (((mousePixel.x - 0) / 
-        (VideoMode::getDesktopMode().width / 2 - 0)) * (m_plane_size.x) + 
-        (m_plane_center.x - m_plane_size.x / 2.0));
-    returnVector.y = (((mousePixel.y - VideoMode::getDesktopMode().height / 2) / 
-        (0 - VideoMode::getDesktopMode().height / 2)) * (m_plane_size.y) + 
-        (m_plane_center.y - m_plane_size.y / 2.0));
+    float mappedX = ((mousePixel.x - 0) / static_cast<float>(m_pixel_size.x)) * m_plane_size.x + (m_plane_center.x - m_plane_size.x / 2.0);
+    float mappedY = ((mousePixel.y - m_pixel_size.y) / static_cast<float>(0 - m_pixel_size.y)) * m_plane_size.y + (m_plane_center.y - m_plane_size.y / 2.0);
 
-    return returnVector;
+    return Vector2f(mappedX, mappedY);
 }
